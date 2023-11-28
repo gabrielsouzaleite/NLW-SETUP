@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { View, Text, ScrollView, Alert } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 
 import { api } from "../lib/axios";
 
@@ -32,19 +32,19 @@ export function Home() {
     try {
       setLoading(true);
 
-      const response = await api.get('/sumarry');
+      const response = await api.get('/summary');
       setSummary(response.data);
     } catch (error) {
       Alert.alert('Ops!', 'Não foi possível carregar o sumário de hábitos.');
-      console.log(error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     fetchData();
-  }, []);
+  }, []));
 
   if(loading) {
     return (
@@ -63,7 +63,7 @@ export function Home() {
             weekDays.map((weekDay, i) => (
               <Text 
                 key={`${weekDay}-${i}`} 
-                className="text-zinc-400 text-xl font-bold text-center mx-1"
+                className="text-zinc-400 text-xl font-bold text-center mx-1 rounded-lg"
                 style={{ width: DAY_SIZE}}
               >
                 {weekDay}
@@ -83,7 +83,7 @@ export function Home() {
           {
             datesFromYearStart.map(date => {
               const dayWithHabits = summary.find(day => {
-                dayjs(date).isSame(day.date)
+                return dayjs(date).isSame(day.date, 'day')
               })
               return (
                 <HabitDay
